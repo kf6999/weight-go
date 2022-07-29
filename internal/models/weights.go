@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 )
 
@@ -35,7 +36,20 @@ func (m *WeightModel) Insert(weight int, notes string) (int, error) {
 }
 
 func (m *WeightModel) Get(id int) (*Weight, error) {
-	return nil, nil
+	stmt := `select weight, coalesce(notes,'') from weights where id = ?`
+
+	row := m.DB.QueryRow(stmt, id)
+
+	w := &Weight{}
+	err := row.Scan(&w.ID, &w.Notes)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNoRecord
+		} else {
+			return nil, err
+		}
+	}
+	return w, nil
 }
 
 func (m *WeightModel) Latest() ([]*Weight, error) {
