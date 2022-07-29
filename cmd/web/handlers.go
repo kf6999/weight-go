@@ -51,5 +51,14 @@ func (app *application) weightCreate(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
-	w.Write([]byte("Create a new weight"))
+	weight := 100
+	note := "test"
+
+	id, err := app.weights.Insert(weight, note)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/weight/view?id=%d", id), http.StatusSeeOther)
 }
