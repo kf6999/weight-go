@@ -3,17 +3,18 @@ package main
 import (
 	"database/sql"
 	"flag"
+	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"net/http"
 	"os"
-
-	_ "github.com/mattn/go-sqlite3"
+	"weight.kenfan.org/internal/models"
 )
 
 // application struct to hold app-wide dependencies
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	weights  *models.WeightModel
 }
 
 func main() {
@@ -35,6 +36,7 @@ func main() {
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		weights:  &models.WeightModel{DB: db},
 	}
 
 	srv := &http.Server{
