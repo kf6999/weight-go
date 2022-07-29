@@ -53,5 +53,31 @@ func (m *WeightModel) Get(id int) (*Weight, error) {
 }
 
 func (m *WeightModel) Latest() ([]*Weight, error) {
-	return nil, nil
+	stmt := `select id, weight, coalesce(notes,'') from weights order by id desc limit 50`
+
+	rows, err := m.DB.Query(stmt)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	weights := []*Weight{}
+
+	// Use rows.Next to iterate through the rows in the resultset
+	for rows.Next() {
+		w := &Weight{}
+		// Use rows.Scan() to copy the values from each field in the row
+		// to the new Weight object
+		err = rows.Scan(&w.ID, &w.Weight, &w.Notes)
+		if err != nil {
+			return nil, err
+		}
+
+		weights = append(weights, w)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return weights, nil
 }
