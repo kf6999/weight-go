@@ -36,12 +36,12 @@ func (m *WeightModel) Insert(weight int, notes string) (int, error) {
 }
 
 func (m *WeightModel) Get(id int) (*Weight, error) {
-	stmt := `select weight, coalesce(notes,'') from weights where id = ?`
+	stmt := `select id, weight, coalesce(notes,''), date from weights where id = ?`
 
 	row := m.DB.QueryRow(stmt, id)
 
 	w := &Weight{}
-	err := row.Scan(&w.ID, &w.Notes)
+	err := row.Scan(&w.ID, &w.Weight, &w.Notes, &w.Date)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNoRecord

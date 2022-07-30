@@ -1,0 +1,16 @@
+{{define "title"}}Weight {{.Weight.Date}}{{end}}
+
+{{define "main"}}
+    {{with .Weight}}
+    <div class='snippet'>
+        <div class='metadata'>
+            <strong>{{.Weight.Weight}}</strong>
+            <span>#{{.Weight.ID}}</span>
+        </div>
+        <pre><code>{{.Weight.Notes}}</code></pre>
+        <div class='metadata'>
+            <time>Created: {{.Weight.Date}}</time>
+        </div>
+    </div>
+    {{end}}
+{{end}}
