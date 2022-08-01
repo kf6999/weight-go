@@ -4,11 +4,18 @@
 <form action='/weight/create' method='POST'>
     <div>
         <label>Weight:</label>
-        <input type='text' name='weight'>
+                {{with .Form.FieldErrors.weight}}
+                    <label class='error'>{{.}}</label>
+                {{end}}
+
+        <input type='text' name='weight' value='{{.Form.Weight}}'>
     </div>
     <div>
-        <label>Notes:</label>
-        <textarea name='notes'></textarea>
+        {{with .Form.FieldErrors.notes}}
+            <label class='error'>{{.}}</label>
+        {{end}}
+        <!-- Re-populate the content data as the inner HTML of the textarea. -->
+        <textarea name='content'>{{.Form.Notes}}</textarea>
     </div>
     <div>
         <input type='submit' value='Enter'>

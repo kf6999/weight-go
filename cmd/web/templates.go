@@ -11,6 +11,7 @@ type templateData struct {
 	Weight      *models.Weight
 	Weights     []*models.Weight
 	CurrentYear int
+	Form        any
 }
 
 func humanDate(t time.Time) string {

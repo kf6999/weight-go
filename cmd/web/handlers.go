@@ -6,6 +6,8 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
+	"strings"
+	"unicode/utf8"
 	"weight.kenfan.org/internal/models"
 )
 
@@ -47,8 +49,15 @@ func (app *application) weightView(w http.ResponseWriter, r *http.Request) {
 }
 func (app *application) weightCreate(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
+	data.Form = weightCreateForm{}
 
 	app.render(w, http.StatusOK, "create.tmpl", data)
+}
+
+type weightCreateForm struct {
+	Weight      string
+	Notes       string
+	FieldErrors map[string]string
 }
 
 func (app *application) weightCreatePost(w http.ResponseWriter, r *http.Request) {
@@ -58,10 +67,31 @@ func (app *application) weightCreatePost(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	weight := r.PostForm.Get("weight")
-	notes := r.PostForm.Get("notes")
+	form := weightCreateForm{
+		Weight:      r.PostForm.Get("weight"),
+		Notes:       r.PostForm.Get("notes"),
+		FieldErrors: map[string]string{},
+	}
 
-	id, err := app.weights.Insert(weight, notes)
+	if strings.TrimSpace(form.Weight) == "" {
+		form.FieldErrors["weight"] = "This field cannot be blank"
+	} else if utf8.RuneCountInString(form.Weight) > 100 {
+		form.FieldErrors["weight"] = "This field cannot be more than 100 characters long"
+	} else if _, err := strconv.Atoi(form.Weight); err != nil {
+		form.FieldErrors["weight"] = "Enter number"
+	}
+
+	if utf8.RuneCountInString(form.Notes) > 300 {
+		form.FieldErrors["notes"] = "This field cannot be more than 300 characters long"
+	}
+	if len(form.FieldErrors) > 0 {
+		data := app.newTemplateData(r)
+		data.Form = form
+		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
+		return
+	}
+
+	id, err := app.weights.Insert(form.Weight, form.Notes)
 	if err != nil {
 		app.serverError(w, err)
 		return
