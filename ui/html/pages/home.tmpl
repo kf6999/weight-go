@@ -12,7 +12,7 @@
         {{range .Weights}}
         <tr>
             <td><a href='/weight/view?id={{.ID}}'>{{.Weight}} lb</a></td>
-            <td>{{.Date}}</td>
+            <td>{{humanDate .Date}}</td>
             <td>#{{.ID}}</td>
         </tr>
         {{end}}
