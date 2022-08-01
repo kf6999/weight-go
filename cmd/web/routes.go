@@ -13,5 +13,5 @@ func (app *application) routes() http.Handler {
 	mux.HandleFunc("/weight/view", app.weightView)
 	mux.HandleFunc("/weight/create", app.weightCreate)
 
-	return secureHeaders(mux)
+	return app.recoverPanic(app.logRequest(secureHeaders(mux)))
 }
