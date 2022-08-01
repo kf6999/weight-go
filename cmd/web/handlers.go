@@ -20,9 +20,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	app.render(w, http.StatusOK, "home.tmpl", &templateData{
-		Weights: weights,
-	})
+	data := app.newTemplateData(r)
+	data.Weights = weights
+
+	app.render(w, http.StatusOK, "home.tmpl", data)
 }
 
 func (app *application) weightView(w http.ResponseWriter, r *http.Request) {
@@ -41,10 +42,10 @@ func (app *application) weightView(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	data := app.newTemplateData(r)
+	data.Weight = weight
 
-	app.render(w, http.StatusOK, "view.tmpl", &templateData{
-		Weight: weight,
-	})
+	app.render(w, http.StatusOK, "view.tmpl", data)
 }
 
 func (app *application) weightCreate(w http.ResponseWriter, r *http.Request) {
