@@ -17,8 +17,13 @@ func humanDate(t time.Time) string {
 	return t.Format("Jan 02 2006 at 15:04")
 }
 
+func normDate(t time.Time) string {
+	return t.Format("01-02-2006")
+}
+
 var functions = template.FuncMap{
 	"humanDate": humanDate,
+	"normDate":  normDate,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {

@@ -1,0 +1,17 @@
+{{define "title"}}Enter New Weight{{end}}
+
+{{define "main"}}
+<form action='/weight/create' method='POST'>
+    <div>
+        <label>Weight:</label>
+        <input type='text' name='weight'>
+    </div>
+    <div>
+        <label>Notes:</label>
+        <textarea name='notes'></textarea>
+    </div>
+    <div>
+        <input type='submit' value='Enter'>
+    </div>
+</form>
+{{end}}

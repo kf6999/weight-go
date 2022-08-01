@@ -3,17 +3,13 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
 	"weight.kenfan.org/internal/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		app.notFound(w)
-		return
-	}
-
 	weights, err := app.weights.Latest()
 	if err != nil {
 		app.serverError(w, err)
@@ -27,7 +23,9 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) weightView(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	params := httprouter.ParamsFromContext(r.Context())
+
+	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
@@ -47,21 +45,27 @@ func (app *application) weightView(w http.ResponseWriter, r *http.Request) {
 
 	app.render(w, http.StatusOK, "view.tmpl", data)
 }
-
 func (app *application) weightCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		app.clientError(w, http.StatusMethodNotAllowed)
+	data := app.newTemplateData(r)
+
+	app.render(w, http.StatusOK, "create.tmpl", data)
+}
+
+func (app *application) weightCreatePost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
 		return
 	}
-	weight := 100
-	note := "test"
 
-	id, err := app.weights.Insert(weight, note)
+	weight := r.PostForm.Get("weight")
+	notes := r.PostForm.Get("notes")
+
+	id, err := app.weights.Insert(weight, notes)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/weight/view?id=%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/weight/view/%d", id), http.StatusSeeOther)
 }

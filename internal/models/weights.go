@@ -19,7 +19,7 @@ type WeightModel struct {
 	DB *sql.DB
 }
 
-func (m *WeightModel) Insert(weight int, notes string) (int, error) {
+func (m *WeightModel) Insert(weight string, notes string) (int, error) {
 	stmt := `insert into weights (weight, notes) values (?,?)`
 
 	result, err := m.DB.Exec(stmt, weight, notes)
