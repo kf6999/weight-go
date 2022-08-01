@@ -53,7 +53,7 @@ func (m *WeightModel) Get(id int) (*Weight, error) {
 }
 
 func (m *WeightModel) Latest() ([]*Weight, error) {
-	stmt := `select id, weight, coalesce(notes,'') from weights order by id desc limit 50`
+	stmt := `select id, weight, coalesce(notes,''),date from weights order by id desc limit 50`
 
 	rows, err := m.DB.Query(stmt)
 	if err != nil {
@@ -69,7 +69,7 @@ func (m *WeightModel) Latest() ([]*Weight, error) {
 		w := &Weight{}
 		// Use rows.Scan() to copy the values from each field in the row
 		// to the new Weight object
-		err = rows.Scan(&w.ID, &w.Weight, &w.Notes)
+		err = rows.Scan(&w.ID, &w.Weight, &w.Notes, &w.Date)
 		if err != nil {
 			return nil, err
 		}

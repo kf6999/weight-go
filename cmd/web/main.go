@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"flag"
 	_ "github.com/mattn/go-sqlite3"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +13,10 @@ import (
 
 // application struct to hold app-wide dependencies
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	weights  *models.WeightModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	weights       *models.WeightModel
+	templateCache map[string]*template.Template
 }
 
 func main() {
@@ -32,11 +34,16 @@ func main() {
 		errorLog.Fatal(err)
 	}
 	defer db.Close()
+	templateCache, err := newTemplateCache()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
 
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		weights:  &models.WeightModel{DB: db},
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		weights:       &models.WeightModel{DB: db},
+		templateCache: templateCache,
 	}
 
 	srv := &http.Server{

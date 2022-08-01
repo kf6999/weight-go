@@ -1,6 +1,23 @@
 {{define "title"}}Home{{end}}
 
 {{define "main"}}
-    <h2>Latest Weight</h2>
-    <p>There's nothing to see here yet!</p>
+    <h2>Latest Weights</h2>
+    {{if .Weights}}
+     <table>
+        <tr>
+            <th>Weight</th>
+            <th>Date</th>
+            <th>ID</th>
+        </tr>
+        {{range .Weights}}
+        <tr>
+            <td><a href='/weight/view?id={{.ID}}'>{{.Weight}} lb</a></td>
+            <td>{{.Date}}</td>
+            <td>#{{.ID}}</td>
+        </tr>
+        {{end}}
+    </table>
+    {{else}}
+        <p>There's nothing to see here... yet!</p>
+    {{end}}
 {{end}}
