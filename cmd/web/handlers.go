@@ -47,11 +47,13 @@ func (app *application) weightView(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
 	data := app.newTemplateData(r)
 	data.Weight = weight
 
 	app.render(w, http.StatusOK, "view.tmpl", data)
 }
+
 func (app *application) weightCreate(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Form = weightCreateForm{}
@@ -83,6 +85,6 @@ func (app *application) weightCreatePost(w http.ResponseWriter, r *http.Request)
 		app.serverError(w, err)
 		return
 	}
-
+	app.sessionManager.Put(r.Context(), "flash", "Weight successfully added!")
 	http.Redirect(w, r, fmt.Sprintf("/weight/view/%d", id), http.StatusSeeOther)
 }
