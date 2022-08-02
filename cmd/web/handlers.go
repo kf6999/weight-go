@@ -6,10 +6,15 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
 	"weight.kenfan.org/internal/models"
+	"weight.kenfan.org/internal/validator"
 )
+
+type weightCreateForm struct {
+	Weight              string `form:"weight"`
+	Notes               string `form:"notes"`
+	validator.Validator `form:"-"`
+}
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	weights, err := app.weights.Latest()
@@ -54,43 +59,25 @@ func (app *application) weightCreate(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, "create.tmpl", data)
 }
 
-type weightCreateForm struct {
-	Weight      string
-	Notes       string
-	FieldErrors map[string]string
-}
-
 func (app *application) weightCreatePost(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	var form weightCreateForm
+
+	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
 
-	form := weightCreateForm{
-		Weight:      r.PostForm.Get("weight"),
-		Notes:       r.PostForm.Get("notes"),
-		FieldErrors: map[string]string{},
-	}
+	form.CheckField(validator.NotBlank(form.Weight), "weight", "This field cannot be blank")
+	form.CheckField(validator.IsInt(form.Weight), "weight", "This field must be a number")
+	form.CheckField(validator.MaxCharacters(form.Notes, 300), "notes", "This field cannot be more than 300 characters long")
 
-	if strings.TrimSpace(form.Weight) == "" {
-		form.FieldErrors["weight"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(form.Weight) > 100 {
-		form.FieldErrors["weight"] = "This field cannot be more than 100 characters long"
-	} else if _, err := strconv.Atoi(form.Weight); err != nil {
-		form.FieldErrors["weight"] = "Enter number"
-	}
-
-	if utf8.RuneCountInString(form.Notes) > 300 {
-		form.FieldErrors["notes"] = "This field cannot be more than 300 characters long"
-	}
-	if len(form.FieldErrors) > 0 {
+	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, http.StatusUnprocessableEntity, "create.tmpl", data)
 		return
 	}
-
 	id, err := app.weights.Insert(form.Weight, form.Notes)
 	if err != nil {
 		app.serverError(w, err)

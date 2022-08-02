@@ -14,8 +14,7 @@
         {{with .Form.FieldErrors.notes}}
             <label class='error'>{{.}}</label>
         {{end}}
-        <!-- Re-populate the content data as the inner HTML of the textarea. -->
-        <textarea name='content'>{{.Form.Notes}}</textarea>
+        <textarea name='notes'>{{.Form.Notes}}</textarea>
     </div>
     <div>
         <input type='submit' value='Enter'>

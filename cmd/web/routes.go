@@ -8,6 +8,7 @@ import (
 
 func (app *application) routes() http.Handler {
 	router := httprouter.New()
+
 	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 	})
@@ -15,10 +16,12 @@ func (app *application) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	router.HandlerFunc(http.MethodGet, "/", app.home)
-	router.HandlerFunc(http.MethodGet, "/weight/view/:id", app.weightView)
-	router.HandlerFunc(http.MethodGet, "/weight/create", app.weightCreate)
-	router.HandlerFunc(http.MethodPost, "/weight/create", app.weightCreatePost)
+	dynamic := alice.New(app.sessionManager.LoadAndSave)
+
+	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
+	router.Handler(http.MethodGet, "/weight/view/:id", dynamic.ThenFunc(app.weightView))
+	router.Handler(http.MethodGet, "/weight/create", dynamic.ThenFunc(app.weightCreate))
+	router.Handler(http.MethodPost, "/weight/create", dynamic.ThenFunc(app.weightCreatePost))
 
 	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
 	return standard.Then(router)
